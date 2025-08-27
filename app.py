@@ -179,3 +179,24 @@ def get_ai_response_with_fallback(messages, task_type="general", user_id=None, s
 
         # If all models fail
         return None, f"All AI models failed. OpenRouter: {str(e)}"
+
+def generate_image_huggingface(prompt):
+    """Generate image using Hugging Face Inference API (Free tier)"""
+    try:
+        API_URL = "https://api-inference.huggingface.co/models/runwayml/stable-diffusion-v1-5"
+        # Hugging Face token removed for security
+        HF_TOKEN = os.environ.get("HF_TOKEN", "")
+        headers = {"Authorization": f"Bearer {HF_TOKEN}"}
+
+        payload = {"inputs": prompt}
+
+        response = requests.post(API_URL, headers=headers, json=payload, timeout=60)
+
+        if response.status_code == 200:
+            # ...existing code...
+            pass
+        # ...existing code...
+    except Exception as e:
+        # ...existing code...
+        pass
+# ...existing code...
