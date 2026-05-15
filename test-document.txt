@@ -1,0 +1,13 @@
+This is a test document for the Sahayak AI educational platform.
+
+The document contains information about mathematics concepts for Grade 5 students.
+
+Topics covered:
+1. Basic arithmetic operations
+2. Fractions and decimals
+3. Geometry shapes
+4. Word problems
+
+This content can be used to test the AI analysis and summarization features of the Sahayak platform.
+
+Students should learn these concepts through practical examples and cultural connections to make learning more engaging and relevant.

@@ -1,0 +1,1806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart AI Chat - DeepSeek & Qwen</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            min-height: 100px;
+            resize: vertical;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #response {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        .tab-button {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            padding: 10px 20px;
+            margin-right: 5px;
+            border-radius: 4px 4px 0 0;
+            cursor: pointer;
+        }
+        .tab-button.active {
+            background-color: #007bff;
+            color: white;
+            border-bottom: 1px solid #007bff;
+        }
+        .tab-content {
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 0 4px 4px 4px;
+            background-color: white;
+        }
+        input[type="file"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        /* Enhanced UI Styles for Integration */
+        .enhanced-loading {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+
+        .loading-spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .loading-details {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .response-container {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 10px 0;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .model-info {
+            background: rgba(0,0,0,0.05);
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .memory-indicator {
+            background: #e8f5e8;
+            color: #2e7d32;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .error-container {
+            background: #ffebee;
+            border: 1px solid #f44336;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 10px 0;
+        }
+
+        .error-message {
+            color: #d32f2f;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .error-details {
+            color: #666;
+            font-size: 12px;
+            margin-bottom: 15px;
+        }
+
+        .retry-btn {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .retry-btn:hover {
+            background: #d32f2f;
+        }
+
+        .note-info {
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideDown {
+            from { transform: translate(-50%, -100%); opacity: 0; }
+            to { transform: translate(-50%, 0); opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translate(-50%, 0); opacity: 1; }
+            to { transform: translate(-50%, -100%); opacity: 0; }
+        }
+
+        .answer-text {
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .answer-text code {
+            background: #f1f1f1;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .answer-text strong {
+            color: #2c3e50;
+        }
+
+        .answer-text em {
+            color: #7f8c8d;
+        }
+
+        .image-container {
+            text-align: center;
+            margin: 15px 0;
+        }
+
+        .image-description {
+            font-style: italic;
+            color: #666;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Smart AI Chat</h1>
+        <p style="color: #666; margin-bottom: 20px;">
+            <small>🧠 DeepSeek • 🎨 Image Search • 👁️ Vision • 🎤 Speech • 🔊 Voice • 🌍 Multilingual</small>
+        </p>
+
+        <!-- Tab Navigation -->
+        <div style="margin-bottom: 20px;">
+            <button id="textTab" class="tab-button active" onclick="showTab('text')">💬 Text Chat</button>
+            <button id="imageTab" class="tab-button" onclick="showTab('image')">🖼️ Image Analysis</button>
+            <button id="liveVoiceTab" class="tab-button" onclick="showTab('livevoice')">🎙️ Live Voice Chat</button>
+            <button id="pdfTab" class="tab-button" onclick="showTab('pdf')">📄 PDF Analysis</button>
+            <button id="linkTab" class="tab-button" onclick="showTab('link')">🔗 Link Analysis</button>
+        </div>
+
+        <!-- Text Chat Tab -->
+        <div id="textChat" class="tab-content">
+            <textarea id="question" placeholder="Enter your question here..."></textarea>
+            <button onclick="askQuestion()">Ask AI</button>
+        </div>
+
+        <!-- Image Analysis Tab -->
+        <div id="imageAnalysis" class="tab-content" style="display: none;">
+            <div style="margin-bottom: 15px;">
+                <label for="imageFile" style="display: block; margin-bottom: 5px; font-weight: bold;">Upload Image:</label>
+                <input type="file" id="imageFile" accept="image/*" style="margin-bottom: 10px;">
+            </div>
+            <textarea id="imageQuestion" placeholder="What would you like to know about this image? (Optional - leave blank for general description)"></textarea>
+            <button onclick="analyzeImage()">Analyze Image</button>
+        </div>
+
+        <!-- Live Voice Chat Tab -->
+        <div id="liveVoiceChat" class="tab-content" style="display: none;">
+            <div style="text-align: center; padding: 40px;">
+                <h2>🎙️ Live Voice Chat with AI</h2>
+                <p style="color: #666; margin-bottom: 30px;">Just like Google Gemini - speak naturally and get instant AI responses!</p>
+
+                <!-- Voice Control Button -->
+                <button id="liveVoiceBtn" onclick="toggleLiveVoice()" style="
+                    width: 120px;
+                    height: 120px;
+                    border-radius: 50%;
+                    border: none;
+                    font-size: 48px;
+                    background: linear-gradient(45deg, #4285f4, #34a853);
+                    color: white;
+                    cursor: pointer;
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+                    transition: all 0.3s ease;
+                ">🎤</button>
+
+                <div style="margin-top: 20px;">
+                    <div id="voiceStatus" style="font-size: 18px; font-weight: bold; color: #333;">Click to start talking</div>
+                    <div id="listeningIndicator" style="margin-top: 10px; color: #666; font-style: italic;"></div>
+                </div>
+
+                <!-- Language Settings -->
+                <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                    <label for="voiceLang" style="font-weight: bold; margin-right: 10px;">Response Language:</label>
+                    <select id="voiceLang" style="padding: 8px; border-radius: 5px; border: 1px solid #ddd;">
+                        <option value="en">🇺🇸 English</option>
+                        <option value="hi">🇮🇳 Hindi (हिंदी)</option>
+                        <option value="kn">🇮🇳 Kannada (ಕನ್ನಡ)</option>
+                        <option value="te">🇮🇳 Telugu (తెలుగు)</option>
+                        <option value="ta">🇮🇳 Tamil (தமிழ்)</option>
+                        <option value="ml">🇮🇳 Malayalam (മലയാളം)</option>
+                        <option value="bn">🇮🇳 Bengali (বাংলা)</option>
+                        <option value="gu">🇮🇳 Gujarati (ગુજરાતી)</option>
+                        <option value="mr">🇮🇳 Marathi (मराठी)</option>
+                        <option value="pa">🇮🇳 Punjabi (ਪੰਜਾਬੀ)</option>
+                        <option value="ur">🇮🇳 Urdu (اردو)</option>
+                        <option value="es">🇪🇸 Spanish</option>
+                        <option value="fr">🇫🇷 French</option>
+                        <option value="de">🇩🇪 German</option>
+                        <option value="it">🇮🇹 Italian</option>
+                        <option value="pt">🇵🇹 Portuguese</option>
+                        <option value="ru">🇷🇺 Russian</option>
+                        <option value="zh">🇨🇳 Chinese</option>
+                        <option value="ja">🇯🇵 Japanese</option>
+                        <option value="ko">🇰🇷 Korean</option>
+                        <option value="ar">🇸🇦 Arabic</option>
+                    </select>
+
+                    <label style="margin-left: 20px;">
+                        <input type="checkbox" id="autoSpeak" checked> Auto-speak AI responses
+                    </label>
+                </div>
+
+                <!-- Live Transcript -->
+                <div id="liveTranscript" style="
+                    margin-top: 20px;
+                    padding: 15px;
+                    background: white;
+                    border: 2px solid #e0e0e0;
+                    border-radius: 10px;
+                    min-height: 60px;
+                    text-align: left;
+                    display: none;
+                ">
+                    <strong>You're saying:</strong> <span id="transcriptText" style="color: #4285f4;"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- PDF Analysis Tab -->
+        <div id="pdfAnalysis" class="tab-content" style="display: none;">
+            <h2>📄 PDF Analysis & Summarization</h2>
+            <p style="color: #666; margin-bottom: 20px;">Upload PDF documents for intelligent analysis, summarization, and Q&A in your preferred language!</p>
+
+            <!-- PDF Upload Section -->
+            <div style="margin-bottom: 20px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                <label for="pdfFile" style="display: block; margin-bottom: 10px; font-weight: bold;">📎 Upload PDF Document:</label>
+                <input type="file" id="pdfFile" accept=".pdf" style="margin-bottom: 15px; padding: 8px;">
+
+                <!-- Language Selection -->
+                <div style="margin-bottom: 15px;">
+                    <label for="pdfLanguage" style="font-weight: bold; margin-right: 10px;">Response Language:</label>
+                    <select id="pdfLanguage" style="padding: 8px; border-radius: 5px; border: 1px solid #ddd;">
+                        <option value="en">🇺🇸 English</option>
+                        <option value="hi">🇮🇳 Hindi (हिंदी)</option>
+                        <option value="kn">🇮🇳 Kannada (ಕನ್ನಡ)</option>
+                        <option value="te">🇮🇳 Telugu (తెలుగు)</option>
+                        <option value="ta">🇮🇳 Tamil (தமிழ்)</option>
+                        <option value="ml">🇮🇳 Malayalam (മലയാളം)</option>
+                        <option value="bn">🇮🇳 Bengali (বাংলা)</option>
+                        <option value="gu">🇮🇳 Gujarati (ગુજરાતી)</option>
+                        <option value="mr">🇮🇳 Marathi (मराठी)</option>
+                        <option value="pa">🇮🇳 Punjabi (ਪੰਜਾਬੀ)</option>
+                        <option value="ur">🇮🇳 Urdu (اردو)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Option A: Basic Summarization -->
+            <div style="margin-bottom: 20px; padding: 20px; background: #e3f2fd; border-radius: 10px;">
+                <h3>📋 Option A: Basic PDF Summarization</h3>
+                <p style="color: #666;">Get an intelligent summary of your PDF document</p>
+
+                <div style="margin-bottom: 15px;">
+                    <label for="summaryType" style="font-weight: bold; margin-right: 10px;">Summary Type:</label>
+                    <select id="summaryType" style="padding: 8px; border-radius: 5px; border: 1px solid #ddd;">
+                        <option value="basic">📝 Basic Summary (3-4 paragraphs)</option>
+                        <option value="detailed">📊 Detailed Analysis (comprehensive)</option>
+                    </select>
+                </div>
+
+                <button onclick="summarizePDF()" style="background: #2196F3; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer;">
+                    📋 Generate Summary
+                </button>
+
+                <button onclick="speakSummary()" id="speakSummaryBtn" style="background: #4CAF50; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; margin-left: 10px; display: none;">
+                    🔊 Hear Summary
+                </button>
+            </div>
+
+            <!-- Option B: Advanced Q&A -->
+            <div style="margin-bottom: 20px; padding: 20px; background: #f1f8e9; border-radius: 10px;">
+                <h3>❓ Option B: Advanced PDF Q&A</h3>
+                <p style="color: #666;">Ask specific questions about your PDF content</p>
+
+                <textarea id="pdfQuestion" placeholder="Ask any question about the PDF content..." style="width: 100%; height: 80px; margin-bottom: 15px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;"></textarea>
+
+                <button onclick="askPDFQuestion()" style="background: #4CAF50; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer;">
+                    ❓ Ask Question
+                </button>
+
+                <button onclick="speakAnswer()" id="speakAnswerBtn" style="background: #FF9800; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; margin-left: 10px; display: none;">
+                    🔊 Hear Answer
+                </button>
+            </div>
+
+            <!-- Full Analysis Button -->
+            <div style="text-align: center; margin-bottom: 20px;">
+                <button onclick="fullPDFAnalysis()" style="background: linear-gradient(45deg, #9C27B0, #E91E63); color: white; padding: 15px 30px; border: none; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: bold;">
+                    🚀 Complete PDF Analysis (Summary + Q&A Ready)
+                </button>
+            </div>
+        </div>
+
+        <!-- Link Analysis Tab -->
+        <div id="linkAnalysis" class="tab-content" style="display: none;">
+            <h2>🔗 Link Analysis & Summarization</h2>
+            <p style="color: #666; margin-bottom: 20px;">Analyze any web link - YouTube videos, articles, blogs, news sites, and more!</p>
+
+            <!-- Link Input Section -->
+            <div style="margin-bottom: 20px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                <label for="linkUrl" style="display: block; margin-bottom: 10px; font-weight: bold;">🌐 Enter Any Web Link:</label>
+                <input type="url" id="linkUrl" placeholder="https://youtube.com/watch?v=... or https://example.com/article" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 15px;">
+
+                <!-- Language Selection -->
+                <div style="margin-bottom: 15px;">
+                    <label for="linkLanguage" style="font-weight: bold; margin-right: 10px;">Response Language:</label>
+                    <select id="linkLanguage" style="padding: 8px; border-radius: 5px; border: 1px solid #ddd;">
+                        <option value="en">🇺🇸 English</option>
+                        <option value="hi">🇮🇳 Hindi (हिंदी)</option>
+                        <option value="kn">🇮🇳 Kannada (ಕನ್ನಡ)</option>
+                        <option value="te">🇮🇳 Telugu (తెలుగు)</option>
+                        <option value="ta">🇮🇳 Tamil (தமிழ்)</option>
+                        <option value="ml">🇮🇳 Malayalam (മലയാളം)</option>
+                        <option value="bn">🇮🇳 Bengali (বাংলা)</option>
+                        <option value="gu">🇮🇳 Gujarati (ગુજરાતી)</option>
+                        <option value="mr">🇮🇳 Marathi (मराठी)</option>
+                        <option value="pa">🇮🇳 Punjabi (ਪੰਜਾਬੀ)</option>
+                        <option value="ur">🇮🇳 Urdu (اردو)</option>
+                    </select>
+                </div>
+
+                <!-- Supported Link Types -->
+                <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <h4 style="margin: 0 0 10px 0; color: #2e7d32;">✅ Supported Link Types:</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 14px;">
+                        <div>🎥 YouTube Videos</div>
+                        <div>📰 News Articles</div>
+                        <div>📝 Blog Posts</div>
+                        <div>🌐 Any Website</div>
+                        <div>📊 Research Papers</div>
+                        <div>💼 Business Content</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Link Summarization -->
+            <div style="margin-bottom: 20px; padding: 20px; background: #e3f2fd; border-radius: 10px;">
+                <h3>📋 Link Summarization</h3>
+                <p style="color: #666;">Get intelligent summaries of web content</p>
+
+                <div style="margin-bottom: 15px;">
+                    <label for="linkSummaryType" style="font-weight: bold; margin-right: 10px;">Summary Type:</label>
+                    <select id="linkSummaryType" style="padding: 8px; border-radius: 5px; border: 1px solid #ddd;">
+                        <option value="basic">📝 Basic Summary (3-4 paragraphs)</option>
+                        <option value="detailed">📊 Detailed Analysis (comprehensive)</option>
+                    </select>
+                </div>
+
+                <button onclick="summarizeLink()" style="background: #2196F3; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer;">
+                    📋 Generate Summary
+                </button>
+
+                <button onclick="speakLinkSummary()" id="speakLinkSummaryBtn" style="background: #4CAF50; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; margin-left: 10px; display: none;">
+                    🔊 Hear Summary
+                </button>
+            </div>
+
+            <!-- Link Q&A -->
+            <div style="margin-bottom: 20px; padding: 20px; background: #f1f8e9; border-radius: 10px;">
+                <h3>❓ Link Content Q&A</h3>
+                <p style="color: #666;">Ask specific questions about the link content</p>
+
+                <textarea id="linkQuestion" placeholder="Ask any question about the link content..." style="width: 100%; height: 80px; margin-bottom: 15px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;"></textarea>
+
+                <button onclick="askLinkQuestion()" style="background: #4CAF50; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer;">
+                    ❓ Ask Question
+                </button>
+
+                <button onclick="speakLinkAnswer()" id="speakLinkAnswerBtn" style="background: #FF9800; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; margin-left: 10px; display: none;">
+                    🔊 Hear Answer
+                </button>
+            </div>
+
+            <!-- Full Link Analysis Button -->
+            <div style="text-align: center; margin-bottom: 20px;">
+                <button onclick="fullLinkAnalysis()" style="background: linear-gradient(45deg, #FF5722, #FF9800); color: white; padding: 15px 30px; border: none; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: bold;">
+                    🚀 Complete Link Analysis (Summary + Q&A Ready)
+                </button>
+            </div>
+
+            <!-- Example Links -->
+            <div style="background: #fff3e0; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <h4 style="margin: 0 0 10px 0; color: #e65100;">💡 Try These Example Links:</h4>
+                <div style="font-size: 14px; line-height: 1.6;">
+                    <div style="margin-bottom: 5px;">
+                        <strong>🎥 YouTube:</strong>
+                        <span style="color: #1976d2; cursor: pointer;" onclick="setExampleLink('https://www.youtube.com/watch?v=dQw4w9WgXcQ')">
+                            Educational video link
+                        </span>
+                    </div>
+                    <div style="margin-bottom: 5px;">
+                        <strong>📰 News:</strong>
+                        <span style="color: #1976d2; cursor: pointer;" onclick="setExampleLink('https://www.bbc.com/news')">
+                            BBC News article
+                        </span>
+                    </div>
+                    <div>
+                        <strong>📝 Blog:</strong>
+                        <span style="color: #1976d2; cursor: pointer;" onclick="setExampleLink('https://medium.com/@example')">
+                            Medium article
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="response"></div>
+    </div>
+
+    <script>
+        // Enhanced Session management for MCP context
+        let userId = localStorage.getItem('ai_chat_user_id') || 'user_' + Math.random().toString(36).substr(2, 9);
+        let sessionId = sessionStorage.getItem('ai_chat_session_id') || 'session_' + Math.random().toString(36).substr(2, 9);
+
+        // Store session info
+        localStorage.setItem('ai_chat_user_id', userId);
+        sessionStorage.setItem('ai_chat_session_id', sessionId);
+
+        console.log('🧠 MCP Context Session:', { userId, sessionId });
+
+        // Global state management
+        let appState = {
+            isProcessing: false,
+            currentTab: 'text-chat',
+            memoryEnabled: true,
+            conversationHistory: [],
+            systemStatus: 'ready'
+        };
+
+        // Initialize app on load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            checkSystemHealth();
+            displaySessionInfo();
+        });
+
+        // Global variables for live voice chat
+        let recognition;
+        let isListening = false;
+        let speechSynthesis = window.speechSynthesis;
+        let currentUtterance = null;
+
+        // Enhanced initialization functions
+        function initializeApp() {
+            console.log('🚀 Initializing AI Chat Application...');
+
+            // Initialize speech recognition if available
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                initializeSpeechRecognition();
+                console.log('✅ Speech recognition initialized');
+            } else {
+                console.log('⚠️ Speech recognition not supported');
+                disableVoiceFeatures();
+            }
+
+            // Initialize tab switching
+            initializeTabSwitching();
+
+            // Initialize file upload handlers
+            initializeFileHandlers();
+
+            // Set up periodic health checks
+            setInterval(checkSystemHealth, 30000); // Every 30 seconds
+
+            console.log('✅ App initialization complete');
+        }
+
+        function checkSystemHealth() {
+            fetch('/health-check')
+                .then(response => response.json())
+                .then(data => {
+                    appState.systemStatus = data.status || 'unknown';
+                    updateStatusIndicator(data);
+                })
+                .catch(error => {
+                    console.warn('Health check failed:', error);
+                    appState.systemStatus = 'error';
+                    updateStatusIndicator({ status: 'error', message: 'Connection failed' });
+                });
+        }
+
+        function displaySessionInfo() {
+            // Add session info to the UI
+            const sessionInfo = document.createElement('div');
+            sessionInfo.id = 'session-info';
+            sessionInfo.style.cssText = `
+                position: fixed;
+                top: 10px;
+                right: 10px;
+                background: rgba(0,0,0,0.8);
+                color: white;
+                padding: 8px 12px;
+                border-radius: 5px;
+                font-size: 12px;
+                z-index: 1000;
+                font-family: monospace;
+            `;
+            sessionInfo.innerHTML = `
+                🧠 Memory: ON<br>
+                👤 User: ${userId.substring(0, 8)}...<br>
+                🔗 Session: ${sessionId.substring(0, 8)}...
+            `;
+            document.body.appendChild(sessionInfo);
+        }
+
+        function initializeSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (SpeechRecognition) {
+                recognition = new SpeechRecognition();
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                recognition.lang = 'en-US';
+            }
+        }
+
+        function initializeTabSwitching() {
+            // Enhanced tab switching with state management
+            const tabs = document.querySelectorAll('.tab-button');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const targetTab = this.getAttribute('data-tab');
+                    appState.currentTab = targetTab;
+
+                    // Update active tab styling
+                    tabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // Show/hide tab content
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.style.display = 'none';
+                    });
+                    document.getElementById(targetTab).style.display = 'block';
+
+                    console.log(`Switched to tab: ${targetTab}`);
+                });
+            });
+        }
+
+        function initializeFileHandlers() {
+            // Enhanced file upload handlers
+            const imageInput = document.getElementById('imageFile');
+            const pdfInput = document.getElementById('pdfFile');
+
+            if (imageInput) {
+                imageInput.addEventListener('change', function() {
+                    if (this.files[0]) {
+                        showNotification(`Image selected: ${this.files[0].name}`, 'info');
+                    }
+                });
+            }
+
+            if (pdfInput) {
+                pdfInput.addEventListener('change', function() {
+                    if (this.files[0]) {
+                        showNotification(`PDF selected: ${this.files[0].name}`, 'info');
+                    }
+                });
+            }
+        }
+
+        function disableVoiceFeatures() {
+            // Disable voice-related buttons if speech recognition is not supported
+            const voiceButtons = document.querySelectorAll('.voice-button');
+            voiceButtons.forEach(button => {
+                button.disabled = true;
+                button.title = 'Speech recognition not supported in this browser';
+            });
+        }
+
+        // Global variables for processing
+        let currentPDFText = '';
+        let currentSummary = '';
+        let currentAnswer = '';
+        let currentLinkContent = '';
+        let currentLinkSummary = '';
+        let currentLinkAnswer = '';
+
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.getElementById('textChat').style.display = 'none';
+            document.getElementById('imageAnalysis').style.display = 'none';
+            document.getElementById('liveVoiceChat').style.display = 'none';
+            document.getElementById('pdfAnalysis').style.display = 'none';
+            document.getElementById('linkAnalysis').style.display = 'none';
+
+            // Remove active class from all tabs
+            document.getElementById('textTab').classList.remove('active');
+            document.getElementById('imageTab').classList.remove('active');
+            document.getElementById('liveVoiceTab').classList.remove('active');
+            document.getElementById('pdfTab').classList.remove('active');
+            document.getElementById('linkTab').classList.remove('active');
+
+            // Show selected tab and mark as active
+            if (tabName === 'text') {
+                document.getElementById('textChat').style.display = 'block';
+                document.getElementById('textTab').classList.add('active');
+            } else if (tabName === 'image') {
+                document.getElementById('imageAnalysis').style.display = 'block';
+                document.getElementById('imageTab').classList.add('active');
+            } else if (tabName === 'livevoice') {
+                document.getElementById('liveVoiceChat').style.display = 'block';
+                document.getElementById('liveVoiceTab').classList.add('active');
+                initializeSpeechRecognition();
+            } else if (tabName === 'pdf') {
+                document.getElementById('pdfAnalysis').style.display = 'block';
+                document.getElementById('pdfTab').classList.add('active');
+            } else if (tabName === 'link') {
+                document.getElementById('linkAnalysis').style.display = 'block';
+                document.getElementById('linkTab').classList.add('active');
+            }
+        }
+
+        // Initialize Speech Recognition (like Gemini)
+        function initializeSpeechRecognition() {
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+                recognition.continuous = false;
+                recognition.interimResults = true;
+
+                // Set recognition language based on selected response language
+                const selectedLang = document.getElementById('voiceLang').value;
+                const recognitionLang = getRecognitionLanguage(selectedLang);
+                recognition.lang = recognitionLang;
+
+                recognition.onstart = function() {
+                    isListening = true;
+                    document.getElementById('voiceStatus').textContent = '🎤 Listening...';
+                    document.getElementById('liveVoiceBtn').style.background = 'linear-gradient(45deg, #ea4335, #fbbc04)';
+                    document.getElementById('liveTranscript').style.display = 'block';
+                    document.getElementById('listeningIndicator').textContent = 'Speak now...';
+                };
+
+                recognition.onresult = function(event) {
+                    let transcript = '';
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        transcript += event.results[i][0].transcript;
+                    }
+
+                    document.getElementById('transcriptText').textContent = transcript;
+
+                    // If result is final, process it
+                    if (event.results[event.results.length - 1].isFinal) {
+                        processVoiceInput(transcript);
+                    }
+                };
+
+                recognition.onerror = function(event) {
+                    console.error('Speech recognition error:', event.error);
+                    resetVoiceUI();
+                    document.getElementById('voiceStatus').textContent = 'Error: ' + event.error;
+                };
+
+                recognition.onend = function() {
+                    resetVoiceUI();
+                };
+            } else {
+                alert('Speech recognition not supported in this browser. Please use Chrome, Edge, or Safari.');
+            }
+        }
+
+        // Get speech recognition language code
+        function getRecognitionLanguage(outputLang) {
+            const recognitionMap = {
+                'en': 'en-US',
+                'hi': 'hi-IN',
+                'kn': 'kn-IN',
+                'te': 'te-IN',
+                'ta': 'ta-IN',
+                'ml': 'ml-IN',
+                'bn': 'bn-IN',
+                'gu': 'gu-IN',
+                'mr': 'mr-IN',
+                'pa': 'pa-IN',
+                'ur': 'ur-IN',
+                'es': 'es-ES',
+                'fr': 'fr-FR',
+                'de': 'de-DE',
+                'it': 'it-IT',
+                'pt': 'pt-BR',
+                'ru': 'ru-RU',
+                'zh': 'zh-CN',
+                'ja': 'ja-JP',
+                'ko': 'ko-KR',
+                'ar': 'ar-SA'
+            };
+            return recognitionMap[outputLang] || 'en-US';
+        }
+
+        // Toggle live voice chat (like Gemini's voice button)
+        function toggleLiveVoice() {
+            if (!isListening) {
+                // Update recognition language before starting
+                if (recognition) {
+                    const selectedLang = document.getElementById('voiceLang').value;
+                    const recognitionLang = getRecognitionLanguage(selectedLang);
+                    recognition.lang = recognitionLang;
+                    console.log(`Speech recognition set to: ${recognitionLang} for output language: ${selectedLang}`);
+                }
+                startListening();
+            } else {
+                stopListening();
+            }
+        }
+
+        function startListening() {
+            if (recognition) {
+                recognition.start();
+                document.getElementById('liveVoiceBtn').textContent = '⏹️';
+            }
+        }
+
+        function stopListening() {
+            if (recognition) {
+                recognition.stop();
+            }
+            resetVoiceUI();
+        }
+
+        function resetVoiceUI() {
+            isListening = false;
+            document.getElementById('voiceStatus').textContent = 'Click to start talking';
+            document.getElementById('liveVoiceBtn').textContent = '🎤';
+            document.getElementById('liveVoiceBtn').style.background = 'linear-gradient(45deg, #4285f4, #34a853)';
+            document.getElementById('listeningIndicator').textContent = '';
+        }
+
+        // Process voice input and get AI response
+        async function processVoiceInput(transcript) {
+            const selectedLang = document.getElementById('voiceLang').value;
+            const langName = getLanguageName(selectedLang);
+
+            document.getElementById('voiceStatus').textContent = `🤖 AI is processing ${langName} input...`;
+            document.getElementById('transcriptText').textContent = transcript;
+
+            try {
+                // Enhanced request with language context and session info
+                const requestData = {
+                    question: transcript,
+                    input_language: selectedLang,
+                    output_language: selectedLang,
+                    native_processing: true,
+                    user_id: userId,
+                    session_id: sessionId
+                };
+
+                const response = await fetch('/ask-multilingual', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData),
+                });
+
+                // Fallback to regular ask if multilingual endpoint doesn't exist
+                let data;
+                if (response.status === 404) {
+                    const fallbackResponse = await fetch('/ask', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            question: `[Input in ${langName}] ${transcript}. Please respond in ${langName}.`,
+                            user_id: userId,
+                            session_id: sessionId
+                        }),
+                    });
+                    data = await fallbackResponse.json();
+                } else {
+                    data = await response.json();
+                }
+
+                if (data && data.answer) {
+                    // Display response
+                    displayVoiceResponse(transcript, data, selectedLang);
+
+                    // Auto-speak if enabled
+                    if (document.getElementById('autoSpeak').checked) {
+                        speakResponse(data.answer);
+                    }
+                } else {
+                    document.getElementById('voiceStatus').textContent = 'Error: No response received';
+                }
+            } catch (error) {
+                document.getElementById('voiceStatus').textContent = 'Error: ' + error.message;
+                console.error('Voice processing error:', error);
+            }
+        }
+
+        // Display voice conversation
+        function displayVoiceResponse(userText, aiData, language) {
+            const langName = getLanguageName(language);
+            const inputLangName = detectInputLanguage(userText);
+
+            let responseHtml = `
+                <div style="background: #e3f2fd; padding: 15px; border-radius: 10px; margin: 10px 0;">
+                    <strong>You (${inputLangName}):</strong> "${userText}"
+                </div>
+                <div style="background: #f1f8e9; padding: 15px; border-radius: 10px; margin: 10px 0;">
+                    <strong>AI (${langName}):</strong> ${aiData.answer}
+                    <br><small style="color: #666;">Model: ${aiData.model_used} | Native Language Processing: ✅</small>
+                </div>
+            `;
+
+            if (aiData.type === 'image' && aiData.image_data) {
+                responseHtml += `
+                    <img src="data:image/png;base64,${aiData.image_data}" style="max-width: 100%; height: auto; border-radius: 8px; margin: 10px 0;">
+                `;
+            }
+
+            document.getElementById('response').innerHTML = responseHtml;
+            document.getElementById('voiceStatus').textContent = `Ready for next ${langName} question`;
+        }
+
+        // Simple input language detection based on script
+        function detectInputLanguage(text) {
+            if (/[\u0900-\u097F]/.test(text)) return 'Hindi';
+            if (/[\u0C80-\u0CFF]/.test(text)) return 'Kannada';
+            if (/[\u0C00-\u0C7F]/.test(text)) return 'Telugu';
+            if (/[\u0B80-\u0BFF]/.test(text)) return 'Tamil';
+            if (/[\u0D00-\u0D7F]/.test(text)) return 'Malayalam';
+            if (/[\u0980-\u09FF]/.test(text)) return 'Bengali';
+            if (/[\u0A80-\u0AFF]/.test(text)) return 'Gujarati';
+            if (/[\u0900-\u097F]/.test(text)) return 'Marathi';
+            if (/[\u0A00-\u0A7F]/.test(text)) return 'Punjabi';
+            if (/[\u0600-\u06FF]/.test(text)) return 'Urdu/Arabic';
+            return 'English';
+        }
+
+        // Speak AI response using browser's speech synthesis
+        function speakResponse(text) {
+            // Stop any current speech
+            speechSynthesis.cancel();
+
+            const language = document.getElementById('voiceLang').value;
+            const utterance = new SpeechSynthesisUtterance(text);
+
+            // Language mapping for better voice selection
+            const languageMap = {
+                'en': ['en-US', 'en-GB', 'en-AU', 'en-IN'],
+                'hi': ['hi-IN', 'hi'],
+                'kn': ['kn-IN', 'kn'],
+                'te': ['te-IN', 'te'],
+                'ta': ['ta-IN', 'ta'],
+                'ml': ['ml-IN', 'ml'],
+                'bn': ['bn-IN', 'bn-BD', 'bn'],
+                'gu': ['gu-IN', 'gu'],
+                'mr': ['mr-IN', 'mr'],
+                'pa': ['pa-IN', 'pa'],
+                'ur': ['ur-IN', 'ur-PK', 'ur'],
+                'es': ['es-ES', 'es-MX', 'es-US', 'es'],
+                'fr': ['fr-FR', 'fr-CA', 'fr'],
+                'de': ['de-DE', 'de-AT', 'de'],
+                'it': ['it-IT', 'it'],
+                'pt': ['pt-BR', 'pt-PT', 'pt'],
+                'ru': ['ru-RU', 'ru'],
+                'zh': ['zh-CN', 'zh-TW', 'zh-HK', 'zh'],
+                'ja': ['ja-JP', 'ja'],
+                'ko': ['ko-KR', 'ko'],
+                'ar': ['ar-SA', 'ar-EG', 'ar']
+            };
+
+            // Set language
+            const langCodes = languageMap[language] || [language];
+            utterance.lang = langCodes[0];
+
+            // Adjust speech parameters for Indian languages
+            if (['hi', 'kn', 'te', 'ta', 'ml', 'bn', 'gu', 'mr', 'pa', 'ur'].includes(language)) {
+                utterance.rate = 0.8; // Slightly slower for Indian languages
+                utterance.pitch = 1.1; // Slightly higher pitch
+            } else {
+                utterance.rate = 0.9;
+                utterance.pitch = 1;
+            }
+
+            // Find the best available voice
+            const voices = speechSynthesis.getVoices();
+            let selectedVoice = null;
+
+            // Try to find voice in order of preference
+            for (const langCode of langCodes) {
+                selectedVoice = voices.find(v => v.lang === langCode);
+                if (selectedVoice) break;
+
+                // Try partial match
+                selectedVoice = voices.find(v => v.lang.startsWith(langCode.split('-')[0]));
+                if (selectedVoice) break;
+            }
+
+            // Fallback to any available voice
+            if (!selectedVoice) {
+                selectedVoice = voices.find(v => v.lang.startsWith('en')) || voices[0];
+            }
+
+            if (selectedVoice) {
+                utterance.voice = selectedVoice;
+                console.log(`Using voice: ${selectedVoice.name} (${selectedVoice.lang}) for language: ${language}`);
+            }
+
+            utterance.onstart = function() {
+                const langName = getLanguageName(language);
+                document.getElementById('voiceStatus').textContent = `🔊 AI is speaking in ${langName}...`;
+            };
+
+            utterance.onend = function() {
+                document.getElementById('voiceStatus').textContent = 'Ready for next question';
+            };
+
+            utterance.onerror = function(event) {
+                console.error('Speech synthesis error:', event);
+                document.getElementById('voiceStatus').textContent = 'Speech error - Ready for next question';
+            };
+
+            speechSynthesis.speak(utterance);
+            currentUtterance = utterance;
+        }
+
+        // Get language display name
+        function getLanguageName(code) {
+            const names = {
+                'en': 'English',
+                'hi': 'Hindi',
+                'kn': 'Kannada',
+                'te': 'Telugu',
+                'ta': 'Tamil',
+                'ml': 'Malayalam',
+                'bn': 'Bengali',
+                'gu': 'Gujarati',
+                'mr': 'Marathi',
+                'pa': 'Punjabi',
+                'ur': 'Urdu',
+                'es': 'Spanish',
+                'fr': 'French',
+                'de': 'German',
+                'it': 'Italian',
+                'pt': 'Portuguese',
+                'ru': 'Russian',
+                'zh': 'Chinese',
+                'ja': 'Japanese',
+                'ko': 'Korean',
+                'ar': 'Arabic'
+            };
+            return names[code] || code;
+        }
+
+        // Check available voices for Indian languages
+        function checkIndianLanguageSupport() {
+            const voices = speechSynthesis.getVoices();
+            const indianLangs = ['hi', 'kn', 'te', 'ta', 'ml', 'bn', 'gu', 'mr', 'pa'];
+
+            console.log('Available Indian language voices:');
+            indianLangs.forEach(lang => {
+                const voice = voices.find(v => v.lang.startsWith(lang));
+                if (voice) {
+                    console.log(`✅ ${getLanguageName(lang)}: ${voice.name} (${voice.lang})`);
+                } else {
+                    console.log(`❌ ${getLanguageName(lang)}: Not available`);
+                }
+            });
+        }
+
+        async function askQuestion() {
+            const question = document.getElementById('question').value;
+            if (!question.trim()) {
+                showNotification('Please enter a question', 'warning');
+                return;
+            }
+
+            // Prevent multiple simultaneous requests
+            if (appState.isProcessing) {
+                showNotification('Please wait for the current request to complete', 'info');
+                return;
+            }
+
+            appState.isProcessing = true;
+            const responseDiv = document.getElementById('response');
+
+            // Enhanced loading indicator with memory context
+            responseDiv.innerHTML = `
+                <div class="enhanced-loading">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">🧠 AI is thinking with memory context...</div>
+                    <div class="loading-details">
+                        Memory: ON | User: ${userId.substring(0, 8)}... | Session: ${sessionId.substring(0, 8)}...
+                    </div>
+                </div>
+            `;
+
+            // Add to conversation history
+            appState.conversationHistory.push({
+                role: 'user',
+                content: question,
+                timestamp: new Date().toISOString()
+            });
+
+            try {
+                const startTime = Date.now();
+                const response = await fetch('/ask', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        question,
+                        user_id: userId,
+                        session_id: sessionId,
+                        conversation_history: appState.conversationHistory
+                    }),
+                });
+
+                const data = await response.json();
+                const responseTime = Date.now() - startTime;
+
+                if (response.ok) {
+                    // Add to conversation history
+                    appState.conversationHistory.push({
+                        role: 'assistant',
+                        content: data.answer,
+                        timestamp: new Date().toISOString(),
+                        model: data.model_used,
+                        type: data.type
+                    });
+
+                    const modelInfo = data.model_used ?
+                        `<div class="model-info">
+                            <small style="color: #666; font-style: italic;">
+                                🤖 ${data.model_used} | ⏱️ ${responseTime}ms | 🧠 Memory: ${data.user_id ? 'ON' : 'OFF'}
+                            </small>
+                        </div><br>` : '';
+
+                    if (data.type === 'image' && data.image_data) {
+                        // Enhanced image display
+                        responseDiv.innerHTML = `
+                            <div class="response-container">
+                                <h3>🎨 Generated Image:</h3>
+                                ${modelInfo}
+                                <div class="image-container">
+                                    <img src="data:image/png;base64,${data.image_data}"
+                                         style="max-width: 100%; height: auto; border-radius: 8px; margin: 10px 0; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"
+                                         alt="Generated image">
+                                </div>
+                                <p class="image-description">${data.answer}</p>
+                                <div class="memory-indicator">💾 Saved to conversation memory</div>
+                            </div>
+                        `;
+                    } else {
+                        // Enhanced text response display
+                        const noteInfo = data.note ? `<div class="note-info" style="color: #ff6b35; font-style: italic; margin-bottom: 10px; padding: 8px; background: #fff3f0; border-radius: 4px;">ℹ️ ${data.note}</div>` : '';
+                        responseDiv.innerHTML = `
+                            <div class="response-container">
+                                <h3>🤖 AI Response:</h3>
+                                ${modelInfo}
+                                ${noteInfo}
+                                <div class="answer-text">${formatResponse(data.answer)}</div>
+                                <div class="memory-indicator">💾 Saved to conversation memory</div>
+                            </div>
+                        `;
+                    }
+
+                    // Show success notification
+                    showNotification('Response received successfully!', 'success');
+
+                    // Update conversation counter
+                    updateConversationCounter();
+                } else {
+                    // Enhanced error display
+                    responseDiv.innerHTML = `
+                        <div class="error-container">
+                            <h3>❌ Error</h3>
+                            <div class="error-message">${data.error}</div>
+                            <div class="error-details">
+                                <small>Response time: ${responseTime}ms | Status: ${response.status}</small>
+                            </div>
+                            <button onclick="retryLastRequest()" class="retry-btn">🔄 Retry</button>
+                        </div>
+                    `;
+                    showNotification('Request failed. Please try again.', 'error');
+                }
+            } catch (error) {
+                // Enhanced error handling
+                responseDiv.innerHTML = `
+                    <div class="error-container">
+                        <h3>💥 Connection Error</h3>
+                        <div class="error-message">Failed to connect to the server</div>
+                        <div class="error-details">
+                            <small>${error.message}</small>
+                        </div>
+                        <button onclick="retryLastRequest()" class="retry-btn">🔄 Retry</button>
+                    </div>
+                `;
+                showNotification('Connection failed. Check your internet connection.', 'error');
+            } finally {
+                appState.isProcessing = false;
+                document.getElementById('question').value = ''; // Clear input
+            }
+        }
+
+        // Enhanced utility functions
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : type === 'warning' ? '#ff9800' : '#2196F3'};
+                color: white;
+                padding: 12px 24px;
+                border-radius: 5px;
+                z-index: 10000;
+                font-weight: 500;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+                animation: slideDown 0.3s ease;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.animation = 'slideUp 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        function formatResponse(text) {
+            // Enhanced text formatting
+            return text
+                .replace(/\n/g, '<br>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/`(.*?)`/g, '<code>$1</code>');
+        }
+
+        function updateConversationCounter() {
+            const counter = document.getElementById('conversation-counter') || createConversationCounter();
+            counter.textContent = `💬 ${appState.conversationHistory.length} messages`;
+        }
+
+        function createConversationCounter() {
+            const counter = document.createElement('div');
+            counter.id = 'conversation-counter';
+            counter.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: rgba(0,0,0,0.8);
+                color: white;
+                padding: 8px 12px;
+                border-radius: 5px;
+                font-size: 12px;
+                z-index: 1000;
+            `;
+            document.body.appendChild(counter);
+            return counter;
+        }
+
+        function retryLastRequest() {
+            const lastUserMessage = appState.conversationHistory
+                .filter(msg => msg.role === 'user')
+                .pop();
+
+            if (lastUserMessage) {
+                document.getElementById('question').value = lastUserMessage.content;
+                askQuestion();
+            }
+        }
+
+        function updateStatusIndicator(healthData) {
+            let statusIndicator = document.getElementById('status-indicator');
+            if (!statusIndicator) {
+                statusIndicator = document.createElement('div');
+                statusIndicator.id = 'status-indicator';
+                statusIndicator.style.cssText = `
+                    position: fixed;
+                    top: 10px;
+                    left: 10px;
+                    padding: 8px 12px;
+                    border-radius: 5px;
+                    font-size: 12px;
+                    z-index: 1000;
+                    font-weight: bold;
+                `;
+                document.body.appendChild(statusIndicator);
+            }
+
+            const status = healthData.status || 'unknown';
+            const colors = {
+                'ready': '#4CAF50',
+                'healthy': '#4CAF50',
+                'degraded': '#ff9800',
+                'error': '#f44336',
+                'unknown': '#9e9e9e'
+            };
+
+            statusIndicator.style.background = colors[status] || colors.unknown;
+            statusIndicator.style.color = 'white';
+            statusIndicator.textContent = `🟢 System: ${status.toUpperCase()}`;
+        }
+
+        async function analyzeImage() {
+            const fileInput = document.getElementById('imageFile');
+            const question = document.getElementById('imageQuestion').value || 'What do you see in this image?';
+
+            if (!fileInput.files[0]) {
+                alert('Please select an image file');
+                return;
+            }
+
+            document.getElementById('response').innerHTML = 'Analyzing image...';
+
+            try {
+                const formData = new FormData();
+                formData.append('image', fileInput.files[0]);
+                formData.append('question', question);
+            formData.append('user_id', userId);
+            formData.append('session_id', sessionId);
+
+                const response = await fetch('/analyze-image', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    const modelInfo = data.model_used ? `<small style="color: #666; font-style: italic;">Powered by ${data.model_used}</small><br><br>` : '';
+                    document.getElementById('response').innerHTML = `
+                        <h3>Image Analysis:</h3>
+                        ${modelInfo}
+                        <p>${data.answer}</p>
+                    `;
+                } else {
+                    document.getElementById('response').innerHTML = `
+                        <p style="color: red;">Error: ${data.error}</p>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('response').innerHTML = `
+                    <p style="color: red;">Error: ${error.message}</p>
+                `;
+            }
+        }
+
+        // PDF Processing Functions
+        async function summarizePDF() {
+            const fileInput = document.getElementById('pdfFile');
+            const language = document.getElementById('pdfLanguage').value;
+            const summaryType = document.getElementById('summaryType').value;
+
+            if (!fileInput.files[0]) {
+                alert('Please select a PDF file first');
+                return;
+            }
+
+            document.getElementById('response').innerHTML = '📄 Processing PDF and generating summary...';
+
+            try {
+                const formData = new FormData();
+                formData.append('pdf', fileInput.files[0]);
+                formData.append('language', language);
+            formData.append('user_id', userId);
+            formData.append('session_id', sessionId);
+                formData.append('summary_type', summaryType);
+
+                const response = await fetch('/pdf-summarize', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    currentSummary = data.summary;
+
+                    document.getElementById('response').innerHTML = `
+                        <h3>📋 PDF Summary</h3>
+                        <div style="background: #f0f8ff; padding: 15px; border-radius: 8px; margin: 10px 0;">
+                            <strong>📁 File:</strong> ${data.filename}<br>
+                            <strong>📏 Original Length:</strong> ${data.original_text_length.toLocaleString()} characters<br>
+                            <strong>📝 Summary Length:</strong> ${data.summary_length.toLocaleString()} characters<br>
+                            <strong>🔧 Extraction Method:</strong> ${data.extraction_method}<br>
+                            <strong>🤖 AI Model:</strong> ${data.model_used}<br>
+                            <strong>🌍 Language:</strong> ${getLanguageName(data.language)}
+                        </div>
+                        <div style="background: #f1f8e9; padding: 20px; border-radius: 8px; margin: 10px 0;">
+                            <h4>📄 Summary:</h4>
+                            <p style="line-height: 1.6;">${data.summary}</p>
+                        </div>
+                    `;
+
+                    document.getElementById('speakSummaryBtn').style.display = 'inline-block';
+                } else {
+                    document.getElementById('response').innerHTML = `
+                        <p style="color: red;">❌ Error: ${data.error}</p>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('response').innerHTML = `
+                    <p style="color: red;">💥 Error: ${error.message}</p>
+                `;
+            }
+        }
+
+        async function askPDFQuestion() {
+            const fileInput = document.getElementById('pdfFile');
+            const question = document.getElementById('pdfQuestion').value;
+            const language = document.getElementById('pdfLanguage').value;
+
+            if (!fileInput.files[0]) {
+                alert('Please select a PDF file first');
+                return;
+            }
+
+            if (!question.trim()) {
+                alert('Please enter a question about the PDF');
+                return;
+            }
+
+            document.getElementById('response').innerHTML = '❓ Analyzing PDF and answering your question...';
+
+            try {
+                const formData = new FormData();
+                formData.append('pdf', fileInput.files[0]);
+                formData.append('question', question);
+                formData.append('language', language);
+            formData.append('user_id', userId);
+            formData.append('session_id', sessionId);
+
+                const response = await fetch('/pdf-analyze', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    currentAnswer = data.answer;
+
+                    document.getElementById('response').innerHTML = `
+                        <h3>❓ PDF Q&A</h3>
+                        <div style="background: #f0f8ff; padding: 15px; border-radius: 8px; margin: 10px 0;">
+                            <strong>📁 File:</strong> ${data.filename}<br>
+                            <strong>📏 Document Length:</strong> ${data.document_length.toLocaleString()} characters<br>
+                            <strong>🔧 Extraction Method:</strong> ${data.extraction_method}<br>
+                            <strong>🤖 AI Model:</strong> ${data.model_used}<br>
+                            <strong>🌍 Language:</strong> ${getLanguageName(data.language)}
+                        </div>
+                        <div style="background: #fff3e0; padding: 15px; border-radius: 8px; margin: 10px 0;">
+                            <strong>❓ Your Question:</strong> "${data.question}"
+                        </div>
+                        <div style="background: #f1f8e9; padding: 20px; border-radius: 8px; margin: 10px 0;">
+                            <h4>💡 AI Answer:</h4>
+                            <p style="line-height: 1.6;">${data.answer}</p>
+                        </div>
+                    `;
+
+                    document.getElementById('speakAnswerBtn').style.display = 'inline-block';
+                } else {
+                    document.getElementById('response').innerHTML = `
+                        <p style="color: red;">❌ Error: ${data.error}</p>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('response').innerHTML = `
+                    <p style="color: red;">💥 Error: ${error.message}</p>
+                `;
+            }
+        }
+
+        async function fullPDFAnalysis() {
+            const fileInput = document.getElementById('pdfFile');
+            const language = document.getElementById('pdfLanguage').value;
+
+            if (!fileInput.files[0]) {
+                alert('Please select a PDF file first');
+                return;
+            }
+
+            document.getElementById('response').innerHTML = '🚀 Performing complete PDF analysis...';
+
+            try {
+                const formData = new FormData();
+                formData.append('pdf', fileInput.files[0]);
+                formData.append('language', language);
+                formData.append('include_summary', 'true');
+
+                const response = await fetch('/pdf-full-analysis', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    currentPDFText = data.pdf_text;
+                    currentSummary = data.summary || '';
+
+                    let responseHtml = `
+                        <h3>🚀 Complete PDF Analysis</h3>
+                        <div style="background: #f0f8ff; padding: 15px; border-radius: 8px; margin: 10px 0;">
+                            <strong>📁 File:</strong> ${data.filename}<br>
+                            <strong>📏 Document Length:</strong> ${data.document_length.toLocaleString()} characters<br>
+                            <strong>🔧 Extraction Method:</strong> ${data.extraction_method}<br>
+                            <strong>🌍 Language:</strong> ${getLanguageName(data.language)}<br>
+                            <strong>✅ Status:</strong> Ready for questions!
+                        </div>
+                    `;
+
+                    if (data.summary) {
+                        responseHtml += `
+                            <div style="background: #f1f8e9; padding: 20px; border-radius: 8px; margin: 10px 0;">
+                                <h4>📄 Document Summary:</h4>
+                                <p style="line-height: 1.6;">${data.summary}</p>
+                                <small style="color: #666;">Model: ${data.summary_model}</small>
+                            </div>
+                        `;
+                        document.getElementById('speakSummaryBtn').style.display = 'inline-block';
+                    }
+
+                    responseHtml += `
+                        <div style="background: #fff3e0; padding: 15px; border-radius: 8px; margin: 10px 0;">
+                            <h4>💡 Ready for Questions!</h4>
+                            <p>You can now ask any questions about this PDF using the Q&A section above.</p>
+                            <p><strong>Text Preview:</strong> ${data.text_preview}</p>
+                        </div>
+                    `;
+
+                    document.getElementById('response').innerHTML = responseHtml;
+                } else {
+                    document.getElementById('response').innerHTML = `
+                        <p style="color: red;">❌ Error: ${data.error}</p>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('response').innerHTML = `
+                    <p style="color: red;">💥 Error: ${error.message}</p>
+                `;
+            }
+        }
+
+        // Speech functions for PDF content
+        function speakSummary() {
+            if (currentSummary) {
+                const language = document.getElementById('pdfLanguage').value;
+                speakResponse(currentSummary);
+            } else {
+                alert('No summary available to speak');
+            }
+        }
+
+        function speakAnswer() {
+            if (currentAnswer) {
+                const language = document.getElementById('pdfLanguage').value;
+                speakResponse(currentAnswer);
+            } else {
+                alert('No answer available to speak');
+            }
+        }
+
+        // Link Processing Functions
+        async function summarizeLink() {
+            const url = document.getElementById('linkUrl').value.trim();
+            const language = document.getElementById('linkLanguage').value;
+            const summaryType = document.getElementById('linkSummaryType').value;
+
+            if (!url) {
+                alert('Please enter a web link');
+                return;
+            }
+
+            document.getElementById('response').innerHTML = '🔗 Processing link and generating summary...';
+
+            try {
+                const response = await fetch('/link-summarize', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        url: url,
+                        language: language,
+                        summary_type: summaryType
+                    }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    currentLinkSummary = data.summary;
+
+                    document.getElementById('response').innerHTML = `
+                        <h3>📋 Link Summary</h3>
+                        <div style="background: #f0f8ff; padding: 15px; border-radius: 8px; margin: 10px 0;">
+                            <strong>🔗 URL:</strong> <a href="${data.url}" target="_blank">${data.url}</a><br>
+                            <strong>📏 Original Length:</strong> ${data.original_content_length.toLocaleString()} characters<br>
+                            <strong>📝 Summary Length:</strong> ${data.summary_length.toLocaleString()} characters<br>
+                            <strong>🔧 Extraction Method:</strong> ${data.extraction_method}<br>
+                            <strong>🤖 AI Model:</strong> ${data.model_used}<br>
+                            <strong>🌍 Language:</strong> ${getLanguageName(data.language)}
+                        </div>
+                        <div style="background: #f1f8e9; padding: 20px; border-radius: 8px; margin: 10px 0;">
+                            <h4>📄 Summary:</h4>
+                            <p style="line-height: 1.6;">${data.summary}</p>
+                        </div>
+                        <div style="background: #fff3e0; padding: 15px; border-radius: 8px; margin: 10px 0;">
+                            <h4>📝 Content Preview:</h4>
+                            <p style="font-size: 14px; color: #666;">${data.content_preview}</p>
+                        </div>
+                    `;
+
+                    document.getElementById('speakLinkSummaryBtn').style.display = 'inline-block';
+                } else {
+                    document.getElementById('response').innerHTML = `
+                        <p style="color: red;">❌ Error: ${data.error}</p>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('response').innerHTML = `
+                    <p style="color: red;">💥 Error: ${error.message}</p>
+                `;
+            }
+        }
+
+        async function askLinkQuestion() {
+            const url = document.getElementById('linkUrl').value.trim();
+            const question = document.getElementById('linkQuestion').value;
+            const language = document.getElementById('linkLanguage').value;
+
+            if (!url) {
+                alert('Please enter a web link first');
+                return;
+            }
+
+            if (!question.trim()) {
+                alert('Please enter a question about the link');
+                return;
+            }
+
+            document.getElementById('response').innerHTML = '❓ Analyzing link and answering your question...';
+
+            try {
+                const response = await fetch('/link-analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        url: url,
+                        question: question,
+                        language: language
+                    }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    currentLinkAnswer = data.answer;
+
+                    document.getElementById('response').innerHTML = `
+                        <h3>❓ Link Q&A</h3>
+                        <div style="background: #f0f8ff; padding: 15px; border-radius: 8px; margin: 10px 0;">
+                            <strong>🔗 URL:</strong> <a href="${data.url}" target="_blank">${data.url}</a><br>
+                            <strong>📏 Content Length:</strong> ${data.content_length.toLocaleString()} characters<br>
+                            <strong>🔧 Extraction Method:</strong> ${data.extraction_method}<br>
+                            <strong>🤖 AI Model:</strong> ${data.model_used}<br>
+                            <strong>🌍 Language:</strong> ${getLanguageName(data.language)}
+                        </div>
+                        <div style="background: #fff3e0; padding: 15px; border-radius: 8px; margin: 10px 0;">
+                            <strong>❓ Your Question:</strong> "${data.question}"
+                        </div>
+                        <div style="background: #f1f8e9; padding: 20px; border-radius: 8px; margin: 10px 0;">
+                            <h4>💡 AI Answer:</h4>
+                            <p style="line-height: 1.6;">${data.answer}</p>
+                        </div>
+                    `;
+
+                    document.getElementById('speakLinkAnswerBtn').style.display = 'inline-block';
+                } else {
+                    document.getElementById('response').innerHTML = `
+                        <p style="color: red;">❌ Error: ${data.error}</p>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('response').innerHTML = `
+                    <p style="color: red;">💥 Error: ${error.message}</p>
+                `;
+            }
+        }
+
+        async function fullLinkAnalysis() {
+            const url = document.getElementById('linkUrl').value.trim();
+            const language = document.getElementById('linkLanguage').value;
+
+            if (!url) {
+                alert('Please enter a web link');
+                return;
+            }
+
+            document.getElementById('response').innerHTML = '🚀 Performing complete link analysis...';
+
+            try {
+                const response = await fetch('/link-full-analysis', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        url: url,
+                        language: language,
+                        include_summary: true
+                    }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    currentLinkContent = data.content;
+                    currentLinkSummary = data.summary || '';
+
+                    let responseHtml = `
+                        <h3>🚀 Complete Link Analysis</h3>
+                        <div style="background: #f0f8ff; padding: 15px; border-radius: 8px; margin: 10px 0;">
+                            <strong>🔗 URL:</strong> <a href="${data.url}" target="_blank">${data.url}</a><br>
+                            <strong>📊 Content Type:</strong> ${data.content_type}<br>
+                            <strong>📏 Content Length:</strong> ${data.content_length.toLocaleString()} characters<br>
+                            <strong>🔧 Extraction Method:</strong> ${data.extraction_method}<br>
+                            <strong>🌍 Language:</strong> ${getLanguageName(data.language)}<br>
+                            <strong>✅ Status:</strong> Ready for questions!
+                        </div>
+                    `;
+
+                    if (data.summary) {
+                        responseHtml += `
+                            <div style="background: #f1f8e9; padding: 20px; border-radius: 8px; margin: 10px 0;">
+                                <h4>📄 Content Summary:</h4>
+                                <p style="line-height: 1.6;">${data.summary}</p>
+                                <small style="color: #666;">Model: ${data.summary_model}</small>
+                            </div>
+                        `;
+                        document.getElementById('speakLinkSummaryBtn').style.display = 'inline-block';
+                    }
+
+                    responseHtml += `
+                        <div style="background: #fff3e0; padding: 15px; border-radius: 8px; margin: 10px 0;">
+                            <h4>💡 Ready for Questions!</h4>
+                            <p>You can now ask any questions about this link using the Q&A section above.</p>
+                            <p><strong>Content Preview:</strong> ${data.content_preview}</p>
+                        </div>
+                    `;
+
+                    document.getElementById('response').innerHTML = responseHtml;
+                } else {
+                    document.getElementById('response').innerHTML = `
+                        <p style="color: red;">❌ Error: ${data.error}</p>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('response').innerHTML = `
+                    <p style="color: red;">💥 Error: ${error.message}</p>
+                `;
+            }
+        }
+
+        // Speech functions for link content
+        function speakLinkSummary() {
+            if (currentLinkSummary) {
+                speakResponse(currentLinkSummary);
+            } else {
+                alert('No link summary available to speak');
+            }
+        }
+
+        function speakLinkAnswer() {
+            if (currentLinkAnswer) {
+                speakResponse(currentLinkAnswer);
+            } else {
+                alert('No link answer available to speak');
+            }
+        }
+
+        // Utility function for example links
+        function setExampleLink(url) {
+            document.getElementById('linkUrl').value = url;
+        }
+
+        // Load voices when page loads
+        window.addEventListener('load', function() {
+            // Load voices for speech synthesis
+            if (speechSynthesis.onvoiceschanged !== undefined) {
+                speechSynthesis.onvoiceschanged = function() {
+                    // Check Indian language support when voices are loaded
+                    setTimeout(checkIndianLanguageSupport, 1000);
+                };
+            }
+
+            // Also check after a delay in case voices are already loaded
+            setTimeout(checkIndianLanguageSupport, 2000);
+        });
+    </script>
+</body>
+</html>

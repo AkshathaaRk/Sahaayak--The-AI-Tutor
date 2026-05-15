@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../Downloads/hackathon/Sahayak"
+		},
+		{
+			"path": "../Downloads/hackathon/.vscode"
+		}
+	],
+	"settings": {}
+}

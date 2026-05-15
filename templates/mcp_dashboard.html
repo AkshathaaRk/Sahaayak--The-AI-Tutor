@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCP Server Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header .subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .status-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid #4CAF50;
+        }
+        
+        .status-card.warning {
+            border-left-color: #FF9800;
+        }
+        
+        .status-card.error {
+            border-left-color: #F44336;
+        }
+        
+        .status-card h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .metric:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        .metric-label {
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .metric-value {
+            color: #333;
+            font-weight: bold;
+        }
+        
+        .metric-value.good {
+            color: #4CAF50;
+        }
+        
+        .metric-value.warning {
+            color: #FF9800;
+        }
+        
+        .metric-value.error {
+            color: #F44336;
+        }
+        
+        .security-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        .security-section h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+        
+        .security-events {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .security-event {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #17a2b8;
+        }
+        
+        .security-event.high {
+            border-left-color: #dc3545;
+            background: #fff5f5;
+        }
+        
+        .security-event.medium {
+            border-left-color: #ffc107;
+            background: #fffbf0;
+        }
+        
+        .event-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .event-type {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .event-time {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .event-details {
+            color: #555;
+            font-size: 0.95em;
+        }
+        
+        .refresh-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+            transition: transform 0.2s;
+            margin: 10px 5px;
+        }
+        
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .uptime {
+            text-align: center;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .charts-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .chart-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50 0%, #45a049 100%);
+            transition: width 0.3s ease;
+        }
+        
+        .progress-fill.warning {
+            background: linear-gradient(90deg, #FF9800 0%, #f57c00 100%);
+        }
+        
+        .progress-fill.error {
+            background: linear-gradient(90deg, #F44336 0%, #d32f2f 100%);
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .status-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .charts-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="header">
+            <h1>🚀 MCP Server Dashboard</h1>
+            <div class="subtitle">Model Context Protocol - Real-time Monitoring</div>
+        </div>
+        
+        <div class="uptime">
+            <h2>🕐 System Uptime: {{ (status.uptime_seconds // 3600) }}h {{ ((status.uptime_seconds % 3600) // 60) }}m {{ (status.uptime_seconds % 60) }}s</h2>
+            <p>Server running since {{ status.timestamp }}</p>
+        </div>
+        
+        <div class="status-grid">
+            <!-- Core Metrics -->
+            <div class="status-card">
+                <h3>📊 Core Metrics</h3>
+                <div class="metric">
+                    <span class="metric-label">Total Requests</span>
+                    <span class="metric-value good">{{ status.metrics.requests_total }}</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Context Updates</span>
+                    <span class="metric-value">{{ status.metrics.context_updates }}</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Context Fetches</span>
+                    <span class="metric-value">{{ status.metrics.context_fetches }}</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Active Sessions</span>
+                    <span class="metric-value">{{ status.metrics.active_sessions }}</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Avg Response Time</span>
+                    <span class="metric-value">{{ "%.3f"|format(status.metrics.avg_response_time) }}s</span>
+                </div>
+            </div>
+            
+            <!-- System Resources -->
+            <div class="status-card {% if status.system.cpu_percent > 80 or status.system.memory_percent > 80 %}warning{% endif %}">
+                <h3>💻 System Resources</h3>
+                <div class="metric">
+                    <span class="metric-label">CPU Usage</span>
+                    <span class="metric-value {% if status.system.cpu_percent > 80 %}warning{% endif %}">{{ status.system.cpu_percent }}%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill {% if status.system.cpu_percent > 80 %}warning{% endif %}" 
+                         style="width: {{ status.system.cpu_percent }}%"></div>
+                </div>
+                
+                <div class="metric">
+                    <span class="metric-label">Memory Usage</span>
+                    <span class="metric-value {% if status.system.memory_percent > 80 %}warning{% endif %}">{{ status.system.memory_percent }}%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill {% if status.system.memory_percent > 80 %}warning{% endif %}" 
+                         style="width: {{ status.system.memory_percent }}%"></div>
+                </div>
+                
+                <div class="metric">
+                    <span class="metric-label">Memory Used</span>
+                    <span class="metric-value">{{ status.system.memory_used_mb }} / {{ status.system.memory_total_mb }} MB</span>
+                </div>
+                
+                <div class="metric">
+                    <span class="metric-label">Disk Usage</span>
+                    <span class="metric-value {% if status.system.disk_percent > 80 %}warning{% endif %}">{{ status.system.disk_percent }}%</span>
+                </div>
+            </div>
+            
+            <!-- Redis Status -->
+            <div class="status-card {% if status.redis.status != 'connected' %}error{% endif %}">
+                <h3>🔴 Redis Status</h3>
+                <div class="metric">
+                    <span class="metric-label">Connection</span>
+                    <span class="metric-value {% if status.redis.status == 'connected' %}good{% else %}error{% endif %}">
+                        {{ status.redis.status|title }}
+                    </span>
+                </div>
+                {% if status.redis.status == 'connected' %}
+                <div class="metric">
+                    <span class="metric-label">Connected Clients</span>
+                    <span class="metric-value">{{ status.redis.connected_clients }}</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Memory Used</span>
+                    <span class="metric-value">{{ status.redis.used_memory_mb }} MB</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Commands Processed</span>
+                    <span class="metric-value">{{ status.redis.total_commands_processed }}</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Cache Hit Rate</span>
+                    <span class="metric-value">
+                        {% set total_ops = status.redis.keyspace_hits + status.redis.keyspace_misses %}
+                        {% if total_ops > 0 %}
+                            {{ "%.1f"|format((status.redis.keyspace_hits / total_ops) * 100) }}%
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Context Statistics -->
+            <div class="status-card">
+                <h3>📝 Context Statistics</h3>
+                <div class="metric">
+                    <span class="metric-label">Total Contexts</span>
+                    <span class="metric-value">{{ status.context_stats.total_contexts or 0 }}</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Total Size</span>
+                    <span class="metric-value">{{ status.context_stats.total_size_mb or 0 }} MB</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Unique Users</span>
+                    <span class="metric-value">{{ status.context_stats.unique_users or 0 }}</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Unique Sessions</span>
+                    <span class="metric-value">{{ status.context_stats.unique_sessions or 0 }}</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Avg Context Size</span>
+                    <span class="metric-value">{{ status.context_stats.avg_context_size_kb or 0 }} KB</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Security Events -->
+        <div class="security-section">
+            <h3>🔒 Security Events (Last 24 Hours)</h3>
+            <div class="security-events">
+                {% if security_events %}
+                    {% for event in security_events[:10] %}
+                    <div class="security-event {{ event.severity }}">
+                        <div class="event-header">
+                            <span class="event-type">{{ event.type|title }}</span>
+                            <span class="event-time">{{ event.timestamp }}</span>
+                        </div>
+                        <div class="event-details">{{ event.details }}</div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p>No security events recorded.</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Control Buttons -->
+        <div style="text-align: center;">
+            <button class="refresh-btn" onclick="location.reload()">🔄 Refresh Dashboard</button>
+            <button class="refresh-btn" onclick="clearCache()">🗑️ Clear Cache</button>
+            <button class="refresh-btn" onclick="window.open('/metrics', '_blank')">📊 Prometheus Metrics</button>
+        </div>
+    </div>
+    
+    <script>
+        // Auto-refresh every 30 seconds
+        setTimeout(() => {
+            location.reload();
+        }, 30000);
+        
+        function clearCache() {
+            if (confirm('Are you sure you want to clear the cache?')) {
+                fetch('/admin/clear-cache')
+                    .then(response => response.json())
+                    .then(data => {
+                        alert(data.message || 'Cache cleared');
+                        location.reload();
+                    })
+                    .catch(error => {
+                        alert('Error clearing cache: ' + error);
+                    });
+            }
+        }
+        
+        // Add real-time updates
+        function updateMetrics() {
+            fetch('/admin/status')
+                .then(response => response.json())
+                .then(data => {
+                    // Update key metrics without full page reload
+                    console.log('Metrics updated:', data);
+                })
+                .catch(error => console.error('Error updating metrics:', error));
+        }
+        
+        // Update metrics every 10 seconds
+        setInterval(updateMetrics, 10000);
+    </script>
+</body>
+</html>
