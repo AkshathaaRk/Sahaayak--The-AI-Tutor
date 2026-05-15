@@ -16,6 +16,7 @@ Sahaayak (सहायक) is an AI-powered learning platform built for Indian s
 - **Memory System** — Persistent context across conversations via MCP
 - **Workflow** — End-to-end architecture from user input to AI routing
 
+## workfkow
 <img src="https://github.com/user-attachments/assets/1aff19b4-4216-4838-afd8-9f2dbdff85d1" alt="Sahaayak workflow" />
 
 ---
